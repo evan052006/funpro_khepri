@@ -13,7 +13,7 @@ Demo app for
 
     https://rebar3.org/docs/getting-started/
 
-## Linux (Ubuntu)
+## Ubuntu/Debian-based Linux distro
 1. Install Erlang
 ```bash
 sudo apt install erlang
@@ -26,6 +26,18 @@ sudo apt install rebar3
 
 ## Other OSes
 Follow the guide on https://www.erlang.org/downloads and https://rebar3.org/docs/getting-started/ for your OS.
+
+## Run Individual Script
+
+1. Open Rebar3 shell
+```bash
+rebar3 shell
+```
+
+2. Run the file you would want to run. For example, to run [`src/ets_demo.erl`](src/ets_demo.erl):
+```erlang
+ets_demo:run().
+```
 
 ## Build
 ``` bash
