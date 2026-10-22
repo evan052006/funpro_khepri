@@ -1,20 +1,33 @@
-khepri_test
-=====
+# khepri_test
 
-Erlang application to 
+Demo app for 
 
-Dev tool installation
+## Dev tool installation
 
-Windows
------
-1. Install erlang
-Erlang download link for windows
-https://github.com/erlang/otp/releases/download/OTP-29.1.2/otp_win64_29.1.2.exe
+## Windows
+1. Install Erlang from this link.
 
-2. Follow windows steps to install rebar3 (its just a portable executable)
-https://rebar3.org/docs/getting-started/
+    https://github.com/erlang/otp/releases/download/OTP-29.1.2/otp_win64_29.1.2.exe
 
-Build
------
+2. Follow Windows steps to install Rebar3 (its just a portable executable)
 
-    $ rebar3 compile
+    https://rebar3.org/docs/getting-started/
+
+## Linux (Ubuntu)
+1. Install Erlang
+```bash
+sudo apt install erlang
+```
+
+2. Install Rebar3
+```bash
+sudo apt install rebar3
+```
+
+## Other OSes
+Follow the guide on https://www.erlang.org/downloads and https://rebar3.org/docs/getting-started/ for your OS.
+
+## Build
+``` bash
+rebar3 compile
+```
