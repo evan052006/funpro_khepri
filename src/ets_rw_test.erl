@@ -25,13 +25,13 @@ run(ReadCon, WriteCon, NumReaders, NumWriters) ->
 
     %% Spawn Reader processes
     ReaderPids = [
-        spawn_link(fun() -> reader_loop(5, Parent) end)
+        spawn_link(fun() -> reader_loop(NumReaders, Parent) end)
         || _ <- lists:seq(1, NumReaders)
     ],
 
     %% Spawn Writer processes
     WriterPids = [
-        spawn_link(fun() -> writer_loop(3, Parent) end)
+        spawn_link(fun() -> writer_loop(NumWriters, Parent) end)
         || _ <- lists:seq(1, NumWriters)
     ],
 
@@ -60,7 +60,7 @@ reader_loop(0, Parent) ->
     Parent ! {done, self()};
 reader_loop(Count, Parent) ->
     ets:lookup(my_cache, data_key),
-    timer:sleep(rand:uniform(50) + 50),
+    % timer:sleep(rand:uniform(50) + 50),
     reader_loop(Count - 1, Parent).
 
 %% Writer loop
@@ -68,7 +68,7 @@ writer_loop(0, Parent) ->
     Parent ! {done, self()};
 writer_loop(Count, Parent) ->
     ets:update_counter(my_cache, data_key, {2, 1}),
-    timer:sleep(rand:uniform(50) + 50),
+    % timer:sleep(rand:uniform(50) + 50),
     writer_loop(Count - 1, Parent).
 
 %% Helper to wait for all processes to report back
