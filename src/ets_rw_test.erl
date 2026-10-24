@@ -1,77 +1,75 @@
 -module(ets_rw_test).
--export([run/0, run/3]).
+-export([run/0, run/4]).
 
-%% Default run with concurrency enabled
+%% Default run with concurrency disabled
 run() ->
-    run([{read_concurrency, true}, {write_concurrency, true}], 10, 10).
+    run(false, false, 100000, 10).
 
-%% Run with custom ETS concurrency flags
-run(Options, NumReaders, NumWriters) ->
-    %% 1. Create an ETS table with the specified concurrency options
-    %% 'named_table' lets us reference it by atom name instead of passing TableId everywhere
-    %% 'public' allows any process to read/write to it
+run(ReadCon, WriteCon, NumReaders, NumWriters) ->
+    Options = [{read_concurrency, ReadCon}, {write_concurrency, WriteCon}],
     TableId = ets:new(my_cache, [named_table, public, set | Options]),
     
-    %% Initialize data
     ets:insert(TableId, {data_key, 0}),
     
-    io:format("Starting ETS concurrency test with options: ~p~n", [Options]),
+    io:format("Starting ETS concurrency test...~n"),
+    io:format("Read Concurrency: ~p | Write Concurrency: ~p~n", [ReadCon, WriteCon]),
+    io:format("Readers: ~p | Writers: ~p~n", [NumReaders, NumWriters]),
 
     Parent = self(),
 
+    %% Capture starting statistics
+    %% statistics(runtime) measures CPU time. 
+    %% statistics(wall_clock) measures actual elapsed real-world time.
+    {StartRuntime, _} = statistics(runtime),
+    {StartWallclock, _} = statistics(wall_clock),
+
     %% Spawn Reader processes
     ReaderPids = [
-        spawn_link(fun() -> reader_loop(I, 5, Parent) end)
-        || I <- lists:seq(1, NumReaders)
+        spawn_link(fun() -> reader_loop(5, Parent) end)
+        || _ <- lists:seq(1, NumReaders)
     ],
 
     %% Spawn Writer processes
     WriterPids = [
-        spawn_link(fun() -> writer_loop(I, 3, Parent) end)
-        || I <- lists:seq(1, NumWriters)
+        spawn_link(fun() -> writer_loop(3, Parent) end)
+        || _ <- lists:seq(1, NumWriters)
     ],
 
     %% Wait for all workers to finish
     AllPids = ReaderPids ++ WriterPids,
     wait_all(AllPids),
 
-    io:format("All reader/writer processes completed. Final data: ~p~n", 
-              [ets:lookup_element(TableId, data_key, 2)]),
+    %% Capture ending statistics
+    {EndRuntime, _} = statistics(runtime),
+    {EndWallclock, _} = statistics(wall_clock),
+
+    Runtime = EndRuntime - StartRuntime,
+    Wallclock = EndWallclock - StartWallclock,
+
+    io:format("All reader/writer processes completed.~n"),
+    io:format("Final data: ~p~n", [ets:lookup_element(TableId, data_key, 2)]),
+    io:format("Total Runtime (CPU time): ~p ms~n", [Runtime]),
+    io:format("Total Wallclock time: ~p ms~n", [Wallclock]),
     
     %% Clean up table
     ets:delete(TableId),
     ok.
 
 %% Reader loop
-reader_loop(ReaderId, 0, Parent) ->
+reader_loop(0, Parent) ->
     Parent ! {done, self()};
-reader_loop(ReaderId, Count, Parent) ->
-    %% Read from ETS natively (thread-safe, concurrent)
-    case ets:lookup(my_cache, data_key) of
-        [{data_key, Val}] ->
-            io:format("Reader ~p reads data: ~p~n", [ReaderId, Val]);
-        [] ->
-            io:format("Reader ~p: data not found~n", [ReaderId])
-    end,
-    %% Simulate read delay (50ms - 100ms)
+reader_loop(Count, Parent) ->
+    ets:lookup(my_cache, data_key),
     timer:sleep(rand:uniform(50) + 50),
-    reader_loop(ReaderId, Count - 1, Parent).
+    reader_loop(Count - 1, Parent).
 
 %% Writer loop
-writer_loop(WriterId, 0, Parent) ->
+writer_loop(0, Parent) ->
     Parent ! {done, self()};
-writer_loop(WriterId, Count, Parent) ->
-    io:format("Writer ~p is writing...~n", [WriterId]),
-    
-    %% Atomic update in ETS using update_counter/3
-    %% This safely increments the value without explicit locks
-    NewVal = ets:update_counter(my_cache, data_key, {2, 1}),
-    
-    io:format("Writer ~p finished writing. New data: ~p~n", [WriterId, NewVal]),
-    
-    %% Simulate write delay (50ms - 100ms)
+writer_loop(Count, Parent) ->
+    ets:update_counter(my_cache, data_key, {2, 1}),
     timer:sleep(rand:uniform(50) + 50),
-    writer_loop(WriterId, Count - 1, Parent).
+    writer_loop(Count - 1, Parent).
 
 %% Helper to wait for all processes to report back
 wait_all([]) ->
