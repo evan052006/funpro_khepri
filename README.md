@@ -14,6 +14,12 @@ https://github.com/erlang/otp/releases/download/OTP-29.1.2/otp_win64_29.1.2.exe
 2. Follow windows steps to install rebar3 (its just a portable executable)
 https://rebar3.org/docs/getting-started/
 
+Ubuntu
+-----
+Just install pr in apt
+1. `sudo apt install erlang && sudo apt install rebar3`
+
+
 Build
 -----
 
