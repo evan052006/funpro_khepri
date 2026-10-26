@@ -14,5 +14,10 @@ init_khepri_test() ->
     khepri:register_projection("/:stock/:wood/*", Projection).
 
 fetch_default() ->
+    ProjectionName = wood_stocks,
     khepri:put("/:stock/:wood/oak", 100),
-    ets:lookup(wood_stocks, <<"oak">>).
+    io:format("~p~n", [ets:lookup(ProjectionName, <<"oak">>)]),
+    khepri:put("/:stock/:wood/oak", 80),
+    io:format("~p~n", [ets:lookup(ProjectionName, <<"oak">>)]),
+    khepri:delete("/:stock/:wood/oak"),
+    io:format("~p~n", [ets:member(ProjectionName, <<"oak">>)]).
