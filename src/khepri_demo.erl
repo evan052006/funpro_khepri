@@ -1,6 +1,8 @@
 -module(khepri_demo).
 -export([run/0]).
 
+-include_lib("khepri/include/khepri.hrl").
+
 run() ->
     io:format("=== 1. Starting Khepri ===~n"),
     {ok, _} = khepri:start(),
@@ -16,11 +18,11 @@ run() ->
     {ok, ThemeResult} = khepri:get([app, settings, theme]),
     io:format("Get theme: ~p~n", [ThemeResult]),
 
-    {ok, AllEmails} = khepri:get([users, {if_name_matches, ".*"}, email]),
-    io:format("Get semua email user (wildcard): ~p~n", [AllEmails]),
+    {ok, AllEmails} = khepri:get_many([users, #if_name_matches{regex = ".*"}, email]),
+    io:format("Get semua email user: ~p~n", [AllEmails]),
 
-    {ok, SettingsTree} = khepri:get([app, settings, '**']),
-    io:format("Get semua settings (rekursif): ~p~n", [SettingsTree]),
+    {ok, SettingsTree} = khepri:get_many([app, settings, #if_name_matches{regex = ".*"}]),
+    io:format("Get semua settings: ~p~n", [SettingsTree]),
 
     io:format("~n=== 4. Atomic Transaction (khepri_tx) ===~n"),
     ok = khepri:put([accounts, <<"alice">>, balance], 1000),
@@ -43,7 +45,7 @@ run() ->
     ok = khepri:delete([users, <<"bob">>]),
     io:format("Menghapus subtree [users, <<\"bob\">>].~n"),
 
-    {ok, RemainingUsers} = khepri:get([users, '**']),
+    {ok, RemainingUsers} = khepri:get_many([users, #if_name_matches{regex = ".*"}]),
     io:format("Sisa data user: ~p~n", [RemainingUsers]),
 
     io:format("~n=== Demo Selesai ===~n"),
