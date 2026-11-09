@@ -17,12 +17,20 @@ run() ->
     io:format("~n=== 3. Read (Get) ===~n"),
     {ok, ThemeResult} = khepri:get([app, settings, theme]),
     io:format("Get theme: ~p~n", [ThemeResult]),
+    % Output:
+    % Get theme: <<"dark">>
 
     {ok, AllEmails} = khepri:get_many([users, #if_name_matches{regex = ".*"}, email]),
     io:format("Get semua email user: ~p~n", [AllEmails]),
+    % Output:
+    % Get semua email user: #{[users,<<"alice">>,email] => <<"alice@example.com">>,
+    %                         [users,<<"bob">>,email] => <<"bob@example.com">>}
 
     {ok, SettingsTree} = khepri:get_many([app, settings, #if_name_matches{regex = ".*"}]),
     io:format("Get semua settings: ~p~n", [SettingsTree]),
+    % Output:
+    % Get semua settings: #{[app,settings,language] => <<"indonesian">>,
+    %                       [app,settings,theme] => <<"dark">>}
 
     io:format("~n=== 4. Atomic Transaction (khepri_tx) ===~n"),
     ok = khepri:put([accounts, <<"alice">>, balance], 1000),
@@ -37,6 +45,8 @@ run() ->
         {BalA - 200, BalB + 200}
     end),
     io:format("Hasil Transaksi (Transfer 200 dari Alice ke Bob): ~p~n", [TxResult]),
+    % Output:
+    % Hasil Transaksi (Transfer 200 dari Alice ke Bob): {ok, {800,700}}
 
     io:format("~n=== 5. Delete ===~n"),
     ok = khepri:delete([app, settings, theme]),
@@ -47,6 +57,9 @@ run() ->
 
     {ok, RemainingUsers} = khepri:get_many([users, #if_name_matches{regex = ".*"}]),
     io:format("Sisa data user: ~p~n", [RemainingUsers]),
+    % Output:
+    % Sisa data user: #{[users,<<"alice">>] => undefined}
 
     io:format("~n=== Demo Selesai ===~n"),
     ok.
+
