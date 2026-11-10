@@ -26,7 +26,7 @@ run(T, K, InitProducts, AddProducts, ReaderNum) ->
         (#{total_products := TotalTid, latest_product := LatestTid}, 
          [products, ProdName], OldProps, NewProps) ->
             
-            IsInsert = maps:is_key(data, NewProps),
+            IsInsert = not maps:is_key(data, OldProps) andalso maps:is_key(data, NewProps),
             IsDelete = maps:is_key(data, OldProps) andalso not maps:is_key(data, NewProps),
             
             if
