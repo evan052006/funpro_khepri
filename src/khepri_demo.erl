@@ -1,5 +1,5 @@
 -module(khepri_demo).
--export([run/0]).
+-export([run/0, main/0]).
 
 -include_lib("khepri/include/khepri.hrl").
 
@@ -63,3 +63,12 @@ run() ->
     io:format("~n=== Demo Selesai ===~n"),
     ok.
 
+main() ->
+    khepri:start(),
+    % Data payload
+    khepri:put([stock, wood, <<"oak">>], 41),
+    khepri:get([stock, wood, <<"oak">>]), % Should return 41
+
+    % Stored procedure payload
+    khepri:put([procs, double], fun(X) -> X * 2 end),
+    khepri:run_sproc([procs, double], [21]). % Should return 42
